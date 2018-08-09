@@ -1,0 +1,167 @@
+# Load libraries for cluster plot generation
+import re
+import csv
+import pandas as pd
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+# os to set, change working directories
+import os
+os.chdir("/Users/barrydigby/final_notebook")
+# Load BioPython libraries for parsing genbank, xml files
+from Bio import SeqIO
+
+
+# Define functions
+# get_sec_met() = 
+# In clusters, if sec_met qualifier is present 
+# extract the information 
+
+def get_sec_met():
+    increment = 0
+    while True:
+        try:
+            if feat.qualifiers["sec_met"]:
+                domains = feat.qualifiers["sec_met"][1].split("Domains detected:")[1]
+                tidy_domains = re.sub(r"(.*?)\s?\(.*?\)", r"\1", domains)
+                sec_met_seq = feat.qualifiers["translation"][0].replace("\n","")
+                #print(tidy_domains)
+                return True, str(tidy_domains), str(sec_met_seq)  ### use return True, str(tidy_domains)
+        except(IndexError, KeyError):
+            return None, ""
+            increment += 1
+            
+# In clusters, if smcog 
+# (secondary metabolism Clusters of Orthologous Group)    
+# extract info 
+
+def get_smcog():
+    increment = 0
+    while True:
+        try:
+            if feat.qualifiers["note"][increment][:5] =="smCOG": 
+                return True, feat.qualifiers["note"][increment] \
+                .split(":")[2].split("(Scor")[0].replace(" ","")
+        except(IndexError, KeyError):
+            return False,""
+        increment += 1
+
+# Function to grab cluster sequences 
+                    
+def printFasta(seq):
+    """printFasta in a nice way with \n after 80 characters"""
+    line_length = 80
+    newseq = ''
+    count = 0
+    for i in seq:
+        if count == line_length:
+            newseq += "\n"
+            count = 0
+        newseq += i
+        count += 1
+    return newseq
+
+# Open files to read, write to 
+# antiSMASH genbank file:
+gbk_file = "contig_1.final copy.gbk"
+
+# Cluster counter .tsv file
+tsv_file = "cluster_counts.tsv"
+cluster_counts = open(tsv_file, "w")
+
+# Cluster Sequences .fasta file
+prot_seq = "cluster_sequences.fa"
+cluster_sequences = open(prot_seq, "w")
+
+
+# for loop capturing cluster information:
+for seq_record in SeqIO.parse(gbk_file, "genbank"):
+    cluster_flag = 0
+    for feat in seq_record.features:
+            if feat.type == "cluster":
+                    
+                min_cluster_loc = min(feat.location)
+                max_cluster_loc = max(feat.location)
+                
+                cluster_number = feat.qualifiers["note"][0].replace(" ","_").replace(":","")
+                cluster_type = feat.qualifiers["product"][0]
+            
+                cluster_counts.write("#"+cluster_number+"\tCluster type:\t"+cluster_type+"\n")
+                
+                cluster_flag = 1
+                
+            if feat.type == "CDS" and cluster_flag == 1:
+                    
+                max_cds_loc = max(feat.location)
+                min_cds_loc = min(feat.location)
+                
+                if max_cds_loc <= max_cluster_loc and min_cds_loc >= min_cluster_loc:
+                    
+                    gene_id = feat.qualifiers["gene"][0]
+                    sequence = feat.qualifiers["translation"][0]
+                    
+                    sec_met = get_sec_met()
+                    sec_met_1 = sec_met[1:]
+                    sec_met_2 = sec_met_1[0].replace(";",",")
+                    
+                    smcog = get_smcog()
+                    smcog_1 = smcog[1]
+                    
+                    cluster_sequences.write(">"+str(gene_id)+"|"+str(smcog_1) \
+                    +"|"+str(sec_met_2)+"\n")
+                    cluster_sequences.write(printFasta(sequence)+"\n")
+
+                else: 
+                    cluster_flag = 0 
+                     
+                    
+                    
+cluster_counts.close()                        
+cluster_sequences.close()
+
+# Generate a pdf barplot of cluster counts 
+df = pd.read_csv('cluster_counts.tsv', sep='\t', names=['Cluster Number', '#', 'Cluster_Type'])
+x = df.Cluster_Type.value_counts()
+x.to_csv('/Users/barrydigby/final_notebook/counts_to_pdf.csv')
+df2 = pd.read_csv('counts_to_pdf.csv', sep=',', names=['Cluster Type', 'Count'])
+df2.plot.bar(x='Cluster Type', rot='0')
+plt.savefig('cluster_counts.pdf') 
+
+#############################################################################################################################
+
+ import os
+from Bio import SeqIO
+from Bio.Blast import NCBIWWW
+
+os.chdir("/Users/barrydigby/final_notebook/Clusters/")
+
+
+fasta_string = open("cluster001.faa").read()
+
+result_handle = NCBIWWW.qblast("blastp","nr",fasta_string)
+save_file = open("cluster001.xml", "w")
+
+save_file.write(result_handle.read())
+
+save_file.close()
+
+result_handle.close()
+
+ #############################################################################################################################
+ 
+import os 
+from Bio.Blast import NCBIXML
+
+os.chdir("/Users/barrydigby/final_notebook/Clusters/xml/")
+
+for record in NCBIXML.parse(open("cluster001.xml")):
+    if record.alignments:
+        record.alignments.sort(key = lambda align: -max(hsp.score for hsp in align.hsps))
+        print("*****HIT 1*****")
+        print(record.alignments[0].hit_id)
+        print(record.alignments[0].hit_def)
+        print("*****HIT 2*****")
+        print(record.alignments[1].hit_id)
+        print(record.alignments[1].hit_def)
+        print("*****HIT 3*****")
+        print(record.alignments[2].hit_id)
+        print(record.alignments[2].hit_def)
