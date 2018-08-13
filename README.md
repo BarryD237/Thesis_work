@@ -1,6 +1,6 @@
 # Thesis_work
 
-> R.emersonii.xlsx
+#### R.emersonii.xlsx
 Excel sheet containing all predicted gene annotations. 
 
 > Excel to SQLite
