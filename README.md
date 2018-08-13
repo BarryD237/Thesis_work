@@ -3,37 +3,37 @@
 #### R.emersonii.xlsx
 Excel sheet containing all predicted gene annotations. 
 
-> Excel to SQLite
+#### Excel to SQLite
 script to convert R.emersonii.xlsx to a SQLite ".db" file. 
 
-> R.emersonii.tar.gz
+#### R.emersonii.tar.gz
 zipped R.emersonii.db file (zipped due to file size constraints). 
 
 #################################################################
 
-> BLAST_hits:Sec_Met.pdf
+#### BLAST_hits:Sec_Met.pdf
 top BLAST hits for each gene in Clusters. If clusters contained
 Secondary Metabolite information, corresponding MiBiG secondary
 metabolite code was looked up. 
 
 #################################################################
 
-> python scripts
+#### python scripts
 does what it says on the tin
 
 #################################################################
 
-> compressedMiBiG.tar.gz
+#### compressedMiBiG.tar.gz
 
 CONTENTS: 
 
----html_content
-       |
-       |-css
-       |-img
-       |-index.html
-       |-js
-       |-networks
+> ---html_content
+>       |
+>       |-css
+>       |-img
+>       |-index.html
+>       |-js
+>       |-networks
        
 This folder contains all of the files neccessary to view the 
 interactive 'index.html' in a web browser. 
