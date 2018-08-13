@@ -27,13 +27,13 @@ does what it says on the tin
 
 CONTENTS: 
 
-> ---html_content
->       |
->       |-css
->       |-img
->       |-index.html
->       |-js
->       |-networks
+---html_content
+      |
+      |-css
+      |-img
+      |-index.html
+      |-js
+      |-networks
        
 This folder contains all of the files neccessary to view the 
 interactive 'index.html' in a web browser. 
